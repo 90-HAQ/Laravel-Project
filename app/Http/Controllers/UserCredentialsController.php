@@ -13,9 +13,8 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 
-class user_signup_login extends Controller
-{
-    
+class UserCredentialsController extends Controller
+{ 
     // mail sending function
     public function sendmail($sendto, $verify_token)
     {
@@ -27,6 +26,7 @@ class user_signup_login extends Controller
         Mail::to($sendto)->send(new testmail($details));
         return response(['Message' => 'Email has been sent for Verification, Please verify your Account.']);
     }
+
 
 
     // signup api
@@ -75,6 +75,7 @@ class user_signup_login extends Controller
             }
         }        
     }
+
 
 
     // welcome api for user email verification and updation
@@ -138,7 +139,7 @@ class user_signup_login extends Controller
 
             // check if data exists in variables or not
             //dd($email_verified);
-            //echo $pas;
+            //dd($pas);
 
             if(!empty($email_verified) && Hash::check($user->password, $pas))
             {
@@ -174,5 +175,87 @@ class user_signup_login extends Controller
                 //return response(['Message' => 'Your email '.$user->email.' is not verified. Please verify your email first.']);
             }
         }
+    }
+
+
+    // user update details
+    function user_update_details(Request $req)
+    {
+        $validation = Validator::make($req->all(),
+        [
+            'token'      =>  'required',
+            'name'      =>  'required|string',
+            'password'  =>  'required|min:8|string',
+        ]);
+
+        if($validation->fails())
+        {
+            return response()->json($validation->errors()->toJson(),400);
+        }
+        else
+        {
+            $token = $req->token;
+
+            if(!empty($token))
+            {
+                $name = $req->name;
+                $password = Hash::make($req->password); // return hashed password
+    
+                DB::table('users')->where('remember_token', $token)->update(['name' => $name, 'password' => $password]);
+                return response(['Message' => 'User Credentials Updated']);    
+            }
+            else
+            {
+                return response(['Message' => 'User not found / Token Expired.']);
+            }
+        } 
+
+    }
+
+
+    // user view all data and posts as well
+    public function user_details_and_posts_details(Request $req)
+    {
+        $token = $req->token;
+
+        $data = DB::table('users')->where(['remember_token' => $token])->get();
+
+        $uid = $data[0]->uid;
+
+        $check = count($data);
+
+        if($check > 0)
+        {
+            $data = User::with('AllUserPost')->where('uid', $uid)->get();
+            return response(['Message' => $data]);
+        }
+        else
+        {
+            return response(['Message' => 'Token not found or expired..!!']);
+        } 
+
+    }
+
+
+    // user logout
+    public function user_logout(Request $req)
+    {
+        $token = $req->token;
+
+        $data = DB::table('users')->where(['remember_token' => $token])->get();
+
+        $check = count($data);
+
+        if($check > 0)
+        {
+            DB::table('users')->where(['remember_token' => $token])->update(['status'=> '0']);
+            DB::table('users')->where(['remember_token' => $token])->update(['remember_token' => null]);
+         
+            return response(['Message' => 'Logout Succeccfully..!!']);
+        }
+        else
+        {
+            return response(['Message' => 'Token not found or expired..!!']);
+        } 
     }
 }

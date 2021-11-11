@@ -7,7 +7,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class user_posts extends Controller
+class UserPostsController extends Controller
 {
     // create post
     function create_post(Request $req)
@@ -76,14 +76,19 @@ class user_posts extends Controller
             $token = $user->token = $req->input('token');
     
             $data = DB::table('users')->where('remember_token', $token)->get();
+            
             $check=count($data);
     
             if(!empty($token))
             {
                 if($check > 0)
                 {
+                    // gets specfic data against uid
                     $uid = $data[0]->uid;
                     $data = DB::table('posts')->where('user_id', $uid)->get();
+
+                    // gets all posts from table
+                    //$data = DB::table('posts')->get();
     
                     return response(['Message'=> $data]);
                 }

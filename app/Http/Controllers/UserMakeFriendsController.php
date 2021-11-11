@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class user_make_friends extends Controller
+class UserMakeFriendsController extends Controller
 {
     function user_add_friends(Request $req)
     {
@@ -46,6 +46,7 @@ class user_make_friends extends Controller
     
                 // get id of user-1
                 $uid1 = $user1[0]->uid;
+                $uid2 = $user1[0]->uid;
     
                 // get id of user-2
                 $uid2 = $user2[0]->uid;
@@ -70,14 +71,13 @@ class user_make_friends extends Controller
                         {
 
                             // add data into friends table    
-                            $values = array('user_id1' => $uid1, 'user_id2' => $uid2);
-                            DB::table('friends')->insert($values);
-            
-                            return response(['Message' => 'Congrats '.$name2.' is your friend now...!!!!']);
+                            //$values = array('user_id1' => $uid1, 'user_id2' => $uid2);
+                            //DB::table('friends')->insert($values);
+                            //return response(['Message' => 'Congrats '.$name2.' is your friend now...!!!!']);
 
-                            /*
+                            
                             // user cannot add himself as friend.
-                            if($uid1 != $uid1)
+                            if($uid1 != $uid2)
                             {
                                 // add data into friends table    
                                 $values = array('user_id1' => $uid1, 'user_id2' => $uid2);
@@ -87,10 +87,8 @@ class user_make_friends extends Controller
                             }
                             else
                             {
-                                return response(['Message' => 'You cannot send friend request to yourself..']);   
-                            }
-                            */
-
+                                return response(['Message' => 'You cannot add yourself as a friend.']);   
+                            }                            
                         }       
                         else
                         {

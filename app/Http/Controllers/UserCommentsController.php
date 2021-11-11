@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class user_comments extends Controller
+class UserCommentsController extends Controller
 {
     function user_comments(Request $req)
     {

@@ -19,4 +19,5 @@ class Post extends Model
         'file',
         'access',
     ];
+
 }
