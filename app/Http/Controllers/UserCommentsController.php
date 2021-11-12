@@ -2,122 +2,123 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\UserCommentValidation;
+use App\Http\Requests\UserCommentUpdateValidation;
+use App\Http\Requests\UserCommentDeleteValidation;
 
 class UserCommentsController extends Controller
 {
-    function user_comments(Request $req)
+
+    // user comments
+    function user_comments(UserCommentValidation $req)
     {
+        $req->validated();
+        $user = new Comment;
 
-        $validation = Validator::make($req->all(),
-        [
-            'token'      =>  'required',
-            'pid'  =>  'required',
-        ]);
-
-        if($validation->fails())
+        $token = $user->name = $req->input('token');
+        $pid = $user->pid = $req->input('pid');
+        $comment = $user->comment = $req->input('comment');
+        
+        if($req->file != null)
         {
-            return response()->json($validation->errors()->toJson(),400);
+            $file = $req->file('file')->store('comments');
         }
         else
         {
-            $token = $req->token;
+            $file = null;
+        }
+        
+        $data = DB::table('users')->where('remember_token', $token)->get();
+        $wordcount = count($data);
 
-            if(!empty($token))
-            {
-                
-                $pid = $req->pid;
-                $comment = $req->comment;
-                if($req->file != null)
-                {
-                    $file = $req->file('file')->store('comments');
-                }
-                else
-                {
-                    $file = null;
-                }
-                
-        
-                $data = DB::table('users')->where('remember_token', $token)->get();
-        
-                $wordcount = count($data);
-    
-                if($wordcount > 0)
-                {
-                    // get user id from 
-                    $uid = $data[0]->uid;
-    
-                    // add data into friends table    
-                    $values = array('user_id' => $uid, 'post_id' => $pid, 'comments' => $comment, 'file' => $file);
-                    DB::table('comments')->insert($values);
-        
-                    return response(['Message' => 'Comment Uploaded on Post...!!!']);
-                }
-                else
-                {
-                    return response(['Message' => 'User does not exist in database.']);
-                }
-            }
-            else
-            {
-                return response(['Message' => 'Login Account Again / Token expired.']);
-            }    
+        if($wordcount > 0)
+        {
+            // get user id from 
+            $uid = $data[0]->uid;
+
+            // add data into friends table    
+            $values = array('user_id' => $uid, 'post_id' => $pid, 'comments' => $comment, 'file' => $file);
+            DB::table('comments')->insert($values);
+
+            return response(['Message' => 'Comment Uploaded on Post...!!!']);
+        }
+        else
+        {
+            return response(['Message' => 'User does not exist in database.']);
         }
     }
 
-    function user_comments_update(Request $req)
+    
+    // user updates comment
+    function user_comments_update(UserCommentUpdateValidation $req)
     {
-        $validation = Validator::make($req->all(),
-        [
-            'token'      =>  'required',
-            'pid'  =>  'required',
-            'cid'  =>  'required',
-        ]);
 
-        if($validation->fails())
+        $req->validated();
+        $user = new Comment;
+
+        $token = $user->name = $req->input('token');
+        $cid = $user->pid = $req->input('cid');
+        $comment = $user->comment = $req->input('comment');
+
+        if($req->file != null)
         {
-            return response()->json($validation->errors()->toJson(),400);
+            $file = $req->file('file')->store('comments');
         }
         else
         {
-            $token = $req->token;
-
-            if(!empty($token))
-            {
-                
-                $cid = $req->cid;
-                $pid = $req->pid;
-                $comment = $req->comment;
-                if($req->file != null)
-                {
-                    $file = $req->file('file')->store('comments');
-                }
-                else
-                {
-                    $file = null;
-                }
-                
-                
-                $data = DB::table('users')->where('remember_token', $token)->get();
+            $file = null;
+        }
         
-                $wordcount = count($data);
         
-                if($wordcount > 0)
-                {
-                    // get user id from 
-                    $uid = $data[0]->uid;
+        $data = DB::table('users')->where('remember_token', $token)->get();
 
-                    DB::table('comments')->where(['cid' => $cid, 'post_id' => $pid,'user_id' => $uid])->update(['comments' => $comment, 'file' => $file]);
+        $wordcount = count($data);
 
-                    return response(['Message' => 'Your Comment has been updated.']);
-                }
-                else
-                {
-                    return response(['Message' => 'Something went wrong in while updating comment..!!!']);
-                }
-            }
-        }        
+        if($wordcount > 0)
+        {
+            // get user id from 
+            $uid = $data[0]->uid;
+
+            DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->update(['comments' => $comment, 'file' => $file]);
+
+            return response(['Message' => 'Your Comment has been updated.']);
+        }
+        else
+        {
+            return response(['Message' => 'Something went wrong in while updating comment..!!!']);
+        }
+    }
+
+
+    // user delete comment
+    function user_comment_delete(UserCommentDeleteValidation $req)
+    {
+        $req->validated();
+        $user = new Comment;
+
+        $token = $user->name = $req->input('token');
+        $cid = $user->pid = $req->input('cid');
+        
+        $data = DB::table('users')->where('remember_token', $token)->get();
+
+        $wordcount = count($data);
+
+        if($wordcount > 0)
+        {
+            // get user id from 
+            $uid = $data[0]->uid;
+
+            DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->delete();
+
+            return response(['Message' => 'Your Comment has been deleted.']);
+        }
+        else
+        {
+            return response(['Message' => 'Something went wrong in while deleted comment..!!!']);
+        }     
     }
 }

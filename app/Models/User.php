@@ -31,6 +31,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        "created_at",
+        "updated_at",
+        "verify_token",
     ];
 
     /**
@@ -46,5 +49,14 @@ class User extends Authenticatable
     public function AllUserPost()
     {
         return $this->hasMany(Post::class,"user_id",'uid');
+        //return $this->hasMany(Post::class,"F.K in posts",'P.K in users');
     }
+
+    public function AllUserPostComments()
+    {
+        return $this->hasManyThrough(Comment::class,Post::class,'user_id','post_id','uid','pid');
+        //return $this->hasManyThrough(Comment::class,Post::class,"F.K in post","F.k in comments","P.K in users",'P.k in posts');
+    }
+
+
 }

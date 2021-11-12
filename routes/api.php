@@ -73,7 +73,9 @@ Route::group(['middleware' => "tokenAuth"], function()
     // user comments
     Route::post('/user_comments', [UserCommentsController::class, 'user_comments']);
 
-
     // user comments updation
     Route::post('/user_comments_update', [UserCommentsController::class, 'user_comments_update']);
+
+    // user delete comment
+    Route::post('/user_delete_comment', [UserCommentsController::class, 'user_comment_delete']);
 });

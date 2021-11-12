@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Friend extends Model
+class Comment extends Model
 {
     use HasFactory;
 
@@ -15,6 +15,8 @@ class Friend extends Model
      * @var string[]
      */
     protected $fillable = [
-        'email',
+        'pid',
+        'cid',
+        'file',
     ];
 }

@@ -14,7 +14,6 @@ class Post extends Model
      * @var string[]
      */
     protected $fillable = [
-        'token',
         'pid',
         'file',
         'access',
