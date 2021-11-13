@@ -14,6 +14,8 @@ use Firebase\JWT\Key;
 use App\Http\Requests\SignupValidation;
 use App\Http\Requests\LoginValidation;
 use App\Http\Requests\UserUpdateDetailsValidation;
+use App\Http\Requests\UserForgetValidation;
+use App\Http\Requests\UserChangePasswordValidation;
 
 
 
@@ -144,6 +146,87 @@ class UserCredentialsController extends Controller
         {
             return response(['Message' => 'Your email '.$user->email.' does not exists in our record '.'because your email is not verified. Please verify your email first.']);
             //return response(['Message' => 'Your email '.$user->email.' is not verified. Please verify your email first.']);
+        }
+    }
+
+
+    // user forgets password after signup and can't login, so reset password.
+    function userForgetPassword(UserForgetValidation $req)
+    {
+        // $req->validated();
+        // $mail=$req->email;
+
+        $req->validated();
+        $user = new User;
+        $mail = $user->email = $req->input('email');
+
+        $data = DB::table('users')->where('email', $mail)->get();
+        
+        $num = count($data);
+        
+        if($num > 0)
+        {
+            foreach ($data as $key)
+            {
+                $verfiy =$key->email_verified_at;
+            }
+            if(!empty($verfiy))
+            {
+                $otp=rand(1000,9999);
+                DB::table('users')->where('email', $mail)->update(['verify_token'=> $otp]);
+                return response($this->sendMailForgetPassword($mail,$otp));
+            }
+            else{
+                return response(['Message'=>'User not Exists']);
+            }
+        }
+        else{
+            return response(['Message'=>'User not Exists']);
+        }
+    }
+
+
+    // send token as otp for resetting old password with new password,
+    function sendMailForgetPassword($mail,$otp)
+    {
+        $details=[
+            'title'=> 'Forget Password Verification',
+            'body'=> 'Your OTP is '. $otp . ' Please copy and paste the change Password Api'
+        ]; 
+        Mail::to($mail)->send(new testmail($details));
+        return response(['Message' => 'An OTP has been sent to '.$mail.' , Please verify and proceed further.']);
+    }
+
+
+    // get otp-token and veirfy then update the user new password.
+    function userChangePassword(UserChangePasswordValidation $req)
+    {
+        $req->validated();
+        $user = new User;
+        $mail = $user->email = $req->input('email');
+        $token = $user->otp = $req->input('otp');
+        $pass=Hash::make($req->input('password'));
+
+        $data = DB::table('users')->where('email', $mail)->get();
+        $num = count($data);
+        
+        if($num > 0)
+        {
+            foreach ($data as $key)
+            {
+                $token1 =$key->verify_token;
+            }
+            if($token1==$token)
+            {
+                DB::table('users')->where('email', $mail)->update(['password'=> $pass]);
+                return response(['Message'=>'Your Password has been updated so now you can login easily.. Thankyou..!!!!. ']);
+            }
+            else{
+                return response(['Message'=>'Otp Does Not Match. ']);
+            }
+        }
+        else{
+            return response(['Message'=>'Please Enter Valid Mail. ']); 
         }
     }
 

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UserDeletePostValidation extends FormRequest
+class UserChangePasswordValidation extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,9 @@ class UserDeletePostValidation extends FormRequest
     public function rules()
     {
         return [
-            'pid'   =>  'required',
+            'email'     =>    'required',
+            'otp'       =>    'required',
+            'password'  =>    'required',
         ];
     }
 }

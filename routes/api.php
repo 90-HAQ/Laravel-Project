@@ -26,10 +26,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // user signup
 Route::post('/signup', [UserCredentialsController::class, 'signup']);
 
-
 // user email verification
 Route::get('/welcome_login/{email}/{verify_token}', [UserCredentialsController::class, 'welcome_to_login']);
 
+// user forget password
+Route::post('/forget_password', [UserCredentialsController::class, 'userForgetPassword']);
+
+// user change password
+Route::post('/change_password', [UserCredentialsController::class, 'userChangePassword']);
 
 // user login
 Route::post('/login', [UserCredentialsController::class, 'login']);
