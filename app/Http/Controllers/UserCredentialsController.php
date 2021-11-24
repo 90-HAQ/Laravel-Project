@@ -197,9 +197,15 @@ class UserCredentialsController extends Controller
     {
         $details=[
             'title'=> 'Forget Password Verification',
-            'body'=> 'Your OTP is '. $otp . ' Please copy and paste the change Password Api'
+            'body'=> 'Your OTP is '. $otp . ' Please verify and update your password.'
         ]; 
-        Mail::to($mail)->send(new testmail($details));
+
+        // queue to mail job object and function 
+        
+        $email = new SendEmailJob($mail, $details);
+        $email->handle();
+
+        //Mail::to($mail)->send(new testmail($details));
         return response(['Message' => 'An OTP has been sent to '.$mail.' , Please verify and proceed further.']);
     }
 
