@@ -21,13 +21,11 @@ class customAuth
 
         if(!empty($token))
         {
-            $data = DB::table('users')->where('remember_token', $token)->get();
+            $data = DB::table('users')->where('remember_token', $token)->first();
 
-            $wordcount = count($data);
-
-            if($wordcount > 0)
+            if(!empty($data))
             {
-                return $next($req);
+                return $next($req->merge(['user_data' => $data]));
             }
             else
             {

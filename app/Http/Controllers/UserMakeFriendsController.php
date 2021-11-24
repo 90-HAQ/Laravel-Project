@@ -14,43 +14,38 @@ class UserMakeFriendsController extends Controller
     {
 
         $req->validated();
-        $user = new Friend;
-        $token = $user->token = $req->input('token');
-        $email = $user->email = $req->input('email');
+
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
         
-        // get all data of uers-1
-        $user1 = DB::table('users')->where(['remember_token' => $token])->get();
+        
+        // get email to add friend from user request
+        $email = $req->input('email');
 
         // get all data of uers-2
-        $user2 = DB::table('users')->where(['email' => $email])->get();
-
-        // get count of all fetch records
-        $wordcount1 = count($user1);
-        $wordcount2 = count($user2);
+        $user2 = DB::table('users')->where(['email' => $email])->first();
 
         // to check if user-2 is email-verified or not
-        $user2_verify = $user2[0]->email_verified_at;
+        $user2_verify = $user2->email_verified_at;
 
         // get id of user-1
-        $uid1 = $user1[0]->uid;
-        $uid2 = $user1[0]->uid;
+        $uid1 = $user_record->uid;
 
         // get id of user-2
-        $uid2 = $user2[0]->uid;
+        $uid2 = $user2->uid;
+
         // get name of user-2
-        $name2 = $user2[0]->name;
+        $name2 = $user2->name;
 
         // get all data of uers-3 from friends table
-        $user3 = DB::table('friends')->where(['user_id1' => $uid1, 'user_id2' => $uid2])->get();
+        $user3 = DB::table('friends')->where(['user_id1' => $uid1, 'user_id2' => $uid2])->first();
 
-        // get count of all fetch records
-        $wordcount3 = count($user3);
 
         // this if is for to check num of rows from user3 variable
-        if($wordcount3 == 0)
+        if(!empty($user3))
         {
             // to check if friend user is email-verified or not
-            if($wordcount1 > 0 && $wordcount2 > 0)
+            if(!empty($user_record) && !empty($user2))
             {
                 // this if is for to check num of rows from user1 variable  
                 // this if is for to check num of rows from user2 variable  

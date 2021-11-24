@@ -17,28 +17,26 @@ class UserCommentsController extends Controller
     function user_comments(UserCommentValidation $req)
     {
         $req->validated();
-        $user = new Comment;
 
-        $token = $user->name = $req->input('token');
-        $pid = $user->pid = $req->input('pid');
-        $comment = $user->comment = $req->input('comment');
-        
-        if($req->file != null)
-        {
-            $file = $req->file('file')->store('comments');
-        }
-        else
-        {
-            $file = null;
-        }
-        
-        $data = DB::table('users')->where('remember_token', $token)->get();
-        $wordcount = count($data);
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
 
-        if($wordcount > 0)
+        if(!empty($user_record))
         {
-            // get user id from 
-            $uid = $data[0]->uid;
+            $pid = $req->input('pid');
+            $comment = $req->input('comment');
+            
+            if($req->file != null)
+            {
+                $file = $req->file('file')->store('comments');
+            }
+            else
+            {
+                $file = null;
+            }
+
+            // get user id from users_record
+            $uid = $user_record->uid;
 
             // add data into friends table    
             $values = array('user_id' => $uid, 'post_id' => $pid, 'comments' => $comment, 'file' => $file);
@@ -56,32 +54,28 @@ class UserCommentsController extends Controller
     // user updates comment
     function user_comments_update(UserCommentUpdateValidation $req)
     {
-
         $req->validated();
-        $user = new Comment;
 
-        $token = $user->name = $req->input('token');
-        $cid = $user->pid = $req->input('cid');
-        $comment = $user->comment = $req->input('comment');
-
-        if($req->file != null)
-        {
-            $file = $req->file('file')->store('comments');
-        }
-        else
-        {
-            $file = null;
-        }
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
         
-        
-        $data = DB::table('users')->where('remember_token', $token)->get();
 
-        $wordcount = count($data);
-
-        if($wordcount > 0)
+        if(!empty($user_record))
         {
-            // get user id from 
-            $uid = $data[0]->uid;
+            $cid = $req->input('cid');
+            $comment = $req->input('comment');
+    
+            if($req->file != null)
+            {
+                $file = $req->file('file')->store('comments');
+            }
+            else
+            {
+                $file = null;
+            }
+
+            // get user id from users_record
+            $uid = $user_record->uid;
 
             DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->update(['comments' => $comment, 'file' => $file]);
 
@@ -98,19 +92,16 @@ class UserCommentsController extends Controller
     function user_comment_delete(UserCommentDeleteValidation $req)
     {
         $req->validated();
-        $user = new Comment;
 
-        $token = $user->name = $req->input('token');
-        $cid = $user->pid = $req->input('cid');
-        
-        $data = DB::table('users')->where('remember_token', $token)->get();
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;        
 
-        $wordcount = count($data);
-
-        if($wordcount > 0)
+        if(!empty($user_record))
         {
-            // get user id from 
-            $uid = $data[0]->uid;
+            $cid = $req->input('cid');
+
+            // get user id from users_record
+            $uid = $user_record->uid;
 
             DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->delete();
 

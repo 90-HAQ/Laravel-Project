@@ -16,41 +16,42 @@ class UserPostsController extends Controller
     function create_post(UserCreatePostValidation $req)
     {
         $req->validated();
-        $user = new Post;
-        
-            $token = $user->token = $req->input('token');
-            $file = $req->file('file')->store('post');
-            $access = $user->access = $req->input('access');
+
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
     
-            $data = DB::table('users')->where('remember_token', $token)->get();
-            $check=count($data);
-            
-            if($check > 0)
-            {
-                $id = $data[0]->uid;
-                $val=array('user_id'=>$id, 'file'=>$file, 'access'=>$access);
-                DB::table('posts')->insert($val);
-                return response(['Message'=>'Post Successfull.']);
-            }
-            else
-            {
-                return response(['Message'=>'Please login First / No Record Found']);
-            }
+        if(!empty($user_record))
+        {
+            $file = $req->file('file')->store('post');
+            $access =  $req->input('access');    
+
+            // get user id from users_record
+            $id = $user_record->uid;
+
+            $val=array('user_id'=>$id, 'file'=>$file, 'access'=>$access);
+            DB::table('posts')->insert($val);
+            return response(['Message'=>'Post Successfull.']);
+        }
+        else
+        {
+            return response(['Message'=>'Please login First / No Record Found']);
+        }
     }
 
 
     // user view all his own posts
     function view_post(Request $req)
     {
-        $user = new Post;
-        $token = $user->token = $req->input('token');
-        $data = DB::table('users')->where('remember_token', $token)->get();
-        $check=count($data);
+        $req->validated();
 
-        if($check > 0)
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
+
+        if(!empty($user_record))
         {
             // gets specfic data against uid
-            $uid = $data[0]->uid;
+            $uid = $user_record->uid;
+
             $data = DB::table('posts')->where('user_id', $uid)->get();
 
             // gets all posts from table
@@ -69,27 +70,28 @@ class UserPostsController extends Controller
     function update_post(UserUpdatePostValidation $req)
     {
         $req->validated();
-        $user = new Post;
-        $token = $user->token = $req->input('token');
-        $pid = $user->pid = $req->input('pid');
-        $file = $user->file = $req->input('file');
-        $access = $user->access = $req->input('access');
 
-        $data = DB::table('users')->where('remember_token', $token)->get();
-        $uid = $data[0]->uid;
-        $check=count($data);
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
 
+        if(!empty($user_record))
+        {
+            $pid = $req->input('pid');
+            $file = $req->input('file');
+            //$file = $req->file('file')->store('post');
+            $access = $req->input('access');
 
-            if($check > 0)
-            {
-                DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->update(['file'=> $file,'access'=> $access,]);
+            // gets specfic data against uid
+            $uid = $user_record->uid;
 
-                return response(['Message'=>'Post Updated']);
-            }
-            else
-            {
-                return response(['Message'=>'Please login First / Token Expired.']);
-            }
+            DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->update(['file'=> $file,'access'=> $access,]);
+
+            return response(['Message'=>'Post Updated']);
+        }
+        else
+        {
+            return response(['Message'=>'Please login First / Token Expired.']);
+        }
     }
 
 
@@ -97,29 +99,31 @@ class UserPostsController extends Controller
     function delete_post(UserDeletePostValidation $req)
     {
         $req->validated();
-        $user = new Post;
 
-        $token = $user->token = $req->input('token');
-        $pid = $user->pid = $req->input('pid');
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
 
-        $data1 = DB::table('users')->where('remember_token', $token)->get();
-        $uid = $data1[0]->uid;
-        $top = count($data1);
-
-        if($top > 0)
+        if(!empty($user_record))
         {
+            // get pid from user request
+            $pid = $req->input('pid');
+
+            // get user id from middleware 
+            $uid = $user_record->uid;
+
+            // delete comments from comments table first
             DB::table('comments')->where('post_id', $pid)->delete();            
 
+            // delete posts from posts table 
             $post = DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->delete();
 
             if($post == 1)
             {
-
                 return response(['Message'=>'Post and Comments on that post deleted successfully.']);   
             }
             else
             {
-                $check2 = "You are not allowed to delete this post, because this post belongs to someone else.";
+                $check2 = "You are not allowed to delete this post, because this post belongs to someone else. / or this post does not exists.";
                 return response(['Message' => $check2]);                                 
             }                
         }

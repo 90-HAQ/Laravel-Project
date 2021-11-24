@@ -43,7 +43,7 @@ Route::group(['middleware' => "tokenAuth"], function()
     Route::post('/logout', [UserCredentialsController::class, 'user_logout']);
 
     
-    // User details and post details
+    // User details and post details and comments details 
     Route::post('/user_post_details', [UserCredentialsController::class, 'user_details_and_posts_details']);
     
 

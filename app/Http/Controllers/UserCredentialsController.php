@@ -16,6 +16,7 @@ use App\Http\Requests\LoginValidation;
 use App\Http\Requests\UserUpdateDetailsValidation;
 use App\Http\Requests\UserForgetValidation;
 use App\Http\Requests\UserChangePasswordValidation;
+use App\Jobs\SendEmailJob;
 
 
 
@@ -29,7 +30,12 @@ class UserCredentialsController extends Controller
             'body'  =>  'Please Verify your Account. Please Click on this link to verify http://127.0.0.1:8000/api/welcome_login'.'/'.$sendto.'/'.$verify_token
         ];
 
-        Mail::to($sendto)->send(new testmail($details));
+        // queue to mail job object and function 
+        
+        $email = new SendEmailJob($sendto, $details);
+        $email->handle();
+
+        // Mail::to($sendto)->send(new testmail($details));
         return response(['Message' => 'Email has been sent for Verification, Please verify your Account.']);
     }
 
@@ -235,13 +241,26 @@ class UserCredentialsController extends Controller
     function user_update_details(UserUpdateDetailsValidation $req)
     {
         $req->validated();
-        $user = new User;
-        $token = $user->token = $req->input('token');
-        $name = $req->name = $req->input('name');
-        $password = Hash::make($req->input('password')); // return hashed password
 
-        DB::table('users')->where('remember_token', $token)->update(['name' => $name, 'password' => $password]);
-        return response(['Message' => 'User Credentials Updated']);    
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
+
+        if(!empty($user_record))
+        {
+            // get token from middleware
+            $token = $user_record->remember_token;
+
+            // get user details to update user credentials
+            $name = $req->input('name');
+            $password = Hash::make($req->input('password')); // return hashed password
+
+            DB::table('users')->where('remember_token', $token)->update(['name' => $name, 'password' => $password]);
+            return response(['Message' => 'User Credentials Updated']);    
+        }
+        else
+        {
+            return response(['Message' => 'This user does not exist...!!']);
+        } 
 
     }
 
@@ -249,13 +268,15 @@ class UserCredentialsController extends Controller
     // user view all data and posts as well
     public function user_details_and_posts_details(Request $req)
     {
-        $token = $req->token;
-        $data = DB::table('users')->where(['remember_token' => $token])->get();
-        $uid = $data[0]->uid;
-        $check = count($data);
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
 
-        if($check > 0)
+        if(!empty($user_record))
         {
+
+            // get user id from middleware
+            $uid = $user_record->uid;
+
             $data = User::with(['AllUserPost','AllUserPostComments'])->where('uid', $uid)->get();
             return response(['Message' => $data]);
         }
@@ -269,12 +290,14 @@ class UserCredentialsController extends Controller
     // user logout
     public function user_logout(Request $req)
     {
-        $token = $req->token;
-        $data = DB::table('users')->where(['remember_token' => $token])->get();
-        $check = count($data);
+        // get all record of user from middleware where token is getting checked
+        $user_record = $req->user_data;
 
-        if($check > 0)
+        if(!empty($user_record))
         {
+            // get token id from middleware 
+            $token = $user_record->remember_token;
+
             DB::table('users')->where(['remember_token' => $token])->update(['status'=> '0']);
             DB::table('users')->where(['remember_token' => $token])->update(['remember_token' => null]);
             return response(['Message' => 'Logout Succeccfully..!!']);
