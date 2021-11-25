@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UserCreatePostValidation;
 use App\Http\Requests\UserUpdatePostValidation;
 use App\Http\Requests\UserDeletePostValidation;
+use App\Http\Resources\PostResource;
 
 class UserPostsController extends Controller
 {
@@ -62,7 +63,8 @@ class UserPostsController extends Controller
                 // gets all posts from table
                 //$data = DB::table('posts')->get();
 
-                return response()->json(['Message'=> $data]);
+                // resourse will displa all data of users post.
+                return new PostResource($data);
             }
             else
             {

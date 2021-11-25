@@ -16,6 +16,7 @@ use App\Http\Requests\UserForgetValidation;
 use App\Http\Requests\UserChangePasswordValidation;
 use App\Jobs\SendEmailJob;
 use App\Services\JWT_Service;
+use App\Http\Resources\UserResource;
 
 
 
@@ -32,9 +33,9 @@ class UserCredentialsController extends Controller
 
         // queue to mail job object and function 
         
-        $email = new SendEmailJob($sendto, $details);
-        //dispatch(new App\Jobs\SendEmailJob($sendto, $details));
-        $email->handle();
+        //$email = new SendEmailJob($sendto, $details);
+        dispatch(new SendEmailJob($sendto, $details));
+        //$email->handle();
 
         // Mail::to($sendto)->send(new testmail($details));
         return response()->json(['Message' => 'Email has been sent for Verification, Please verify your Account.']);
@@ -209,9 +210,11 @@ class UserCredentialsController extends Controller
             'body'=> 'Your OTP is '. $otp . ' Please verify and update your password.'
         ]; 
 
-        // queue to mail job object and function. 
-        $email = new SendEmailJob($mail, $details);
-        $email->handle();
+        // queue to mail job object and function 
+        
+        //$email = new SendEmailJob($sendto, $details);
+        dispatch(new SendEmailJob($mail, $details));
+        //$email->handle();
 
         //Mail::to($mail)->send(new testmail($details));
         return response()->json(['Message' => 'An OTP has been sent to '.$mail.' , Please verify and proceed further.']);
@@ -303,7 +306,10 @@ class UserCredentialsController extends Controller
 
                 $data = User::with(['AllUserPost','AllUserPostComments'])->where('uid', $uid)->get();
 
-                return response()->json(['Message' => $data]);
+                //return response()->json(['Message' => $data]);
+
+                // resourse will displa all data of user.
+                return new UserResource($data);
             }
             else
             {
