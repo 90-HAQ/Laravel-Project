@@ -31,11 +31,11 @@ class UserPostsController extends Controller
                 $val=array('user_id'=>$id, 'file'=>$file, 'access'=>$access);
                 DB::table('posts')->insert($val);
 
-                return response()->json(['Message'=>'Post Successfull.']);
+                return response()->json(['Message'=>'Post Successfull.'], 200);
             }
             else
             {
-                return response()->json(['Message'=>'Please login First / No Record Found']);
+                return response()->json(['Message'=>'Please login First / No Record Found'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -68,7 +68,7 @@ class UserPostsController extends Controller
             }
             else
             {
-                return response(['Message'=>'Please login First / Token Expired.']);
+                return response(['Message'=>'Please login First / Token Expired.'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -98,11 +98,11 @@ class UserPostsController extends Controller
 
                 DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->update(['file'=> $file,'access'=> $access,]);
 
-                return response()->json(['Message'=>'Post Updated']);
+                return response()->json(['Message'=>'Post Updated'], 200);
             }
             else
             {
-                return response()->json(['Message'=>'Please login First / Token Expired.']);
+                return response()->json(['Message'=>'Please login First / Token Expired.'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -136,17 +136,17 @@ class UserPostsController extends Controller
 
                 if($post == 1)
                 {
-                    return response()->json(['Message'=>'Post and Comments on that post deleted successfully.']);   
+                    return response()->json(['Message'=>'Post and Comments on that post deleted successfully.'], 200);   
                 }
                 else
                 {
                     $check2 = "You are not allowed to delete this post, because this post belongs to someone else. / or this post does not exists.";
-                    return response()->json(['Message' => $check2]);                                 
+                    return response()->json(['Message' => $check2], 403);                                 
                 }                
             }
             else
             {
-                return response()->json(['Message'=>'Post Id does not exist.']);
+                return response()->json(['Message'=>'Post Id does not exist.'], 404);
             }
         }
         catch(\Exception $show_error)

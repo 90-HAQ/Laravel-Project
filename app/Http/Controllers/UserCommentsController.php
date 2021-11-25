@@ -41,11 +41,11 @@ class UserCommentsController extends Controller
                 $values = array('user_id' => $uid, 'post_id' => $pid, 'comments' => $comment, 'file' => $file);
                 DB::table('comments')->insert($values);
 
-                return response()->json(['Message' => 'Comment Uploaded on Post...!!!']);
+                return response()->json(['Message' => 'Comment Uploaded on Post...!!!'], 200);
             }
             else
             {
-                return response()->json(['Message' => 'User does not exist in database.']);
+                return response()->json(['Message' => 'User does not exist in database.'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -82,11 +82,11 @@ class UserCommentsController extends Controller
 
                 DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->update(['comments' => $comment, 'file' => $file]);
 
-                return response()->json(['Message' => 'Your Comment has been updated.']);
+                return response()->json(['Message' => 'Your Comment has been updated.'], 200);
             }
             else
             {
-                return response()->json(['Message' => 'Something went wrong in while updating comment..!!!']);
+                return response()->json(['Message' => 'Something went wrong in while updating comment..!!!'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -113,11 +113,11 @@ class UserCommentsController extends Controller
 
                 DB::table('comments')->where(['cid' => $cid, 'user_id' => $uid])->delete();
 
-                return response()->json(['Message' => 'Your Comment has been deleted.']);
+                return response()->json(['Message' => 'Your Comment has been deleted.'], 200);
             }
             else
             {
-                return response()->json(['Message' => 'Something went wrong in while deleted comment..!!!']);
+                return response()->json(['Message' => 'Something went wrong in while deleted comment..!!!'], 404);
             }     
         }
         catch(\Exception $show_error)

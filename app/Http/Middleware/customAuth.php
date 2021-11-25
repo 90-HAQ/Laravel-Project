@@ -29,12 +29,12 @@ class customAuth
             }
             else
             {
-                return response()->json(['Message' => 'Your are not Authenticated User.']);
+                return response()->json(['Message' => 'Your are not Authenticated User.'], 401);
             }
         }
         else
         {
-            return response()->json(['Message' => 'Your Token is Empty.']);
+            return response()->json(['Message' => 'Your Token is Empty.'], 404);
         }
         
     }

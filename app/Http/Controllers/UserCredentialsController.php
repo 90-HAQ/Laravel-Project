@@ -49,7 +49,7 @@ class UserCredentialsController extends Controller
             }
             else
             {
-                return response()->json(['Message'=>'Something went wrong in Signup Api..!!!']);
+                return response()->json(['Message'=>'Something went wrong in Signup Api..!!!'], 400);
             }           
         }
         catch(\Exception $show_error)
@@ -73,11 +73,11 @@ class UserCredentialsController extends Controller
                 DB::table('users')->where('email', $email)->update(['email_verified_at'=> now()]);
                 DB::table('users')->where('email', $email)->update(['updated_at'=> now()]);
     
-                return response()->json(['Message'=>'Your Email has been Verified']);
+                return response()->json(['Message'=>'Your Email has been Verified'], 200);
             }
             else
             {
-                return response()->json(['Message' => 'Something went wrong in Welcome To Login Api..!!!']);
+                return response()->json(['Message' => 'Something went wrong in Welcome To Login Api..!!!'], 400);
             }
         }
         catch(\Exception $show_error)
@@ -116,16 +116,16 @@ class UserCredentialsController extends Controller
     
                     DB::table('users')->where('email', $user->email)->update(['remember_token' => $jwt, 'status'=> '1']);
     
-                    return response()->json(['Message' => 'Now you are logged In', 'access_token' => $jwt]);
+                    return response()->json(['Message' => 'Now you are logged In', 'access_token' => $jwt], 200);
                 }
                 else
                 {
-                    return response()->json(['Message' => 'You are Already Logged In..!!!']);
+                    return response()->json(['Message' => 'You are Already Logged In..!!!'], 400);
                 }
             }
             else
             {
-                return response()->json(['Message' => 'Your email '.$user->email.' does not exists in our record.']);
+                return response()->json(['Message' => 'Your email '.$user->email.' does not exists in our record.'], 404);
                 //return response(['Message' => 'Your email '.$user->email.' is not verified. Please verify your email first.']);
             }
         }
@@ -158,15 +158,15 @@ class UserCredentialsController extends Controller
     
                     $send_email_verify = new Email_Service();
                     $result = $send_email_verify->sendMailForgetPassword($mail,$otp);
-                    return response()->json(['Message'=> $result]);
+                    return response()->json(['Message'=> $result], 200);
                 }
                 else{
-                    return response()->json(['Message'=>'User not Exists']);
+                    return response()->json(['Message'=>'User not Exists'], 404);
                 }
             }
             else
             {
-                return response()->json(['Message'=>'User not Exists']);
+                return response()->json(['Message'=>'User not Exists'], 404);
             }
         }
         catch(\Exception $show_error)
@@ -196,14 +196,14 @@ class UserCredentialsController extends Controller
                 {
                     DB::table('users')->where('email', $mail)->update(['password'=> $pass]);
     
-                    return response()->json(['Message'=>'Your Password has been updated so now you can login easily.. Thankyou..!!!!. ']);
+                    return response()->json(['Message'=>'Your Password has been updated so now you can login easily.. Thankyou..!!!!. '], 200);
                 }
                 else{
-                    return response()->json(['Message'=>'Otp Does Not Match. ']);
+                    return response()->json(['Message'=>'Otp Does Not Match. '], 404);
                 }
             }
             else{
-                return response()->json(['Message'=>'Please Enter Valid Mail. ']); 
+                return response()->json(['Message'=>'Please Enter Valid Mail. '], 404); 
             }
         }
         catch(\Exception $show_error)
@@ -232,11 +232,11 @@ class UserCredentialsController extends Controller
 
                 DB::table('users')->where('remember_token', $token)->update(['name' => $name, 'password' => $password]);
 
-                return response()->json(['Message' => 'User Credentials Updated']);    
+                return response()->json(['Message' => 'User Credentials Updated'], 200);    
             }
             else
             {
-                return response()->json(['Message' => 'This user does not exist...!!']);
+                return response()->json(['Message' => 'This user does not exist...!!'], 404);
             } 
         }
         catch(\Exception $show_error)
@@ -268,7 +268,7 @@ class UserCredentialsController extends Controller
             }
             else
             {
-                return response()->json(['Message' => 'This user does not exist...!!']);
+                return response()->json(['Message' => 'This user does not exist...!!'], 404);
             } 
         }
         catch(\Exception $show_error)
@@ -294,11 +294,11 @@ class UserCredentialsController extends Controller
                 DB::table('users')->where(['remember_token' => $token])->update(['status'=> '0']);
                 DB::table('users')->where(['remember_token' => $token])->update(['remember_token' => null]);
 
-                return response()->json(['Message' => 'Logout Succeccfully..!!']);
+                return response()->json(['Message' => 'Logout Succeccfully..!!'],200);
             }
             else
             {
-                return response()->json(['Message' => 'Token not found or expired..!!']);
+                return response()->json(['Message' => 'Token not found or expired..!!'], 404);
             } 
         }
         catch(\Exception $show_error)

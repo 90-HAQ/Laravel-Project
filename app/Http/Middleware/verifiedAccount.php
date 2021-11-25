@@ -30,7 +30,7 @@ class verifiedAccount
         }
         else
         { 
-            return response()->json(['Message' => 'Email is not verified. Please verify your email first']);   
+            return response()->json(['Message' => 'Email is not verified. Please verify your email first'], 403);   
         }
     }
 }

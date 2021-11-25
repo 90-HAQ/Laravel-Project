@@ -24,7 +24,7 @@ class existingAccount
         
         if(!empty($data))
         {
-            return response()->json(['Message' => 'Account already exists.']);   
+            return response()->json(['Message' => 'Account already exists.'], 302);   
         }
         else
         { 

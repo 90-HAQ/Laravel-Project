@@ -12,9 +12,7 @@ class UserMakeFriendsController extends Controller
     function user_add_friends(UserAddFriendValidation $req)
     {
         try
-        {
-    
-            
+        {   
             $uid1 = $req->friend_data['uid1'];
             $uid2 = $req->friend_data['uid2'];
             
@@ -22,7 +20,7 @@ class UserMakeFriendsController extends Controller
             $values = array('user_id1' => $uid1, 'user_id2' => $uid2);
             DB::table('friends')->insert($values);
 
-            return response()->json(['Message' => 'Congrats Friend Added...!!!!']);
+            return response()->json(['Message' => 'Congrats Friend Added...!!!!'], 200);
         }
         catch(\Exception $show_error)
         {

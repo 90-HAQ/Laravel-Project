@@ -63,23 +63,22 @@ class validFriend
                     }
                     else
                     {
-                        return response()->json(['Message' => 'You cannot add yourself as a friend.']);   
+                        return response()->json(['Message' => 'You cannot add yourself as a friend.'], 400);   
                     }                            
                 }       
                 else
                 {
-                    return response(['Message' => 'Friend not Found / Friend is not verified']);                           
+                    return response(['Message' => 'Friend not Found / Friend is not verified'], 401);                           
                 } 
             }
             else
             {
-                return response()->json(['Message' => 'Friend not Found / Something went wrong with friend.']);
+                return response()->json(['Message' => 'Friend not Found / Something went wrong with friend.'], 404);
             }
         }
         else
         {
-            return response()->json(['Message' => 'Alread your Friend. No need to add friend again.']);
-        }
-    
+            return response()->json(['Message' => 'Alread your Friend. No need to add friend again.'], 401);
+        }    
     }
 }
