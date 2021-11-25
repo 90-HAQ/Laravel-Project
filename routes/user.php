@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 // user signup
-Route::post('/signup', [UserCredentialsController::class, 'signup']);
+Route::post('/signup', [UserCredentialsController::class, 'signup'])->middleware('existAccount');
 
 // user email verification
 Route::get('/welcome_login/{email}/{verify_token}', [UserCredentialsController::class, 'welcome_to_login']);
@@ -33,8 +33,7 @@ Route::post('/forget_password', [UserCredentialsController::class, 'userForgetPa
 Route::post('/change_password', [UserCredentialsController::class, 'userChangePassword']);
 
 // user login
-Route::post('/login', [UserCredentialsController::class, 'login']);
-
+Route::post('/login', [UserCredentialsController::class, 'login'])->middleware('verifyAccount');
 
 // token authentication
 Route::group(['middleware' => "tokenAuth"], function()

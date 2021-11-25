@@ -17,7 +17,7 @@ use App\Http\Controllers\UserCommentsController;
 | routes are loaded by the RouteServiceProvider within a group which
 | is assigned the "api" middleware group. Enjoy building your API!
 |
-*/
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -83,3 +83,5 @@ Route::group(['middleware' => "tokenAuth"], function()
     // user delete comment
     Route::post('/user_delete_comment', [UserCommentsController::class, 'user_comment_delete']);
 });
+
+*/

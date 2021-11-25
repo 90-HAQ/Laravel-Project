@@ -25,5 +25,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['middleware' => "tokenAuth"], function()
 {
     // user add friends
-    Route::post('/add_friend', [UserMakeFriendsController::class, 'user_add_friends']);
+    Route::post('/add_friend', [UserMakeFriendsController::class, 'user_add_friends'])->middleware('validFriend');
 });

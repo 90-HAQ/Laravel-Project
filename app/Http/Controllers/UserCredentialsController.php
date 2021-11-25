@@ -14,34 +14,13 @@ use App\Http\Requests\LoginValidation;
 use App\Http\Requests\UserUpdateDetailsValidation;
 use App\Http\Requests\UserForgetValidation;
 use App\Http\Requests\UserChangePasswordValidation;
-use App\Jobs\SendEmailJob;
-use App\Services\JWT_Service;
 use App\Http\Resources\UserResource;
-
-
+use App\Services\JWT_Service;
+use App\Services\Email_Service;
 
 
 class UserCredentialsController extends Controller
 { 
-    // mail sending function
-    public function sendmail($sendto, $verify_token)
-    {
-        $details = [
-            'title' =>  'Signup Verification.',
-            'body'  =>  'Please Verify your Account. Please Click on this link to verify http://127.0.0.1:8000/api/welcome_login'.'/'.$sendto.'/'.$verify_token
-        ];
-
-        // queue to mail job object and function 
-        
-        //$email = new SendEmailJob($sendto, $details);
-        dispatch(new SendEmailJob($sendto, $details));
-        //$email->handle();
-
-        // Mail::to($sendto)->send(new testmail($details));
-        return response()->json(['Message' => 'Email has been sent for Verification, Please verify your Account.']);
-    }
-
-
     // user signup 
     public function signup(SignupValidation $req)
     {
@@ -64,7 +43,8 @@ class UserCredentialsController extends Controller
     
             if($result)
             {
-                $result = $this->sendmail($sendto, $verify_token);
+                $send_email_verify = new Email_Service();
+                $result = $send_email_verify->sendmail($sendto, $verify_token);
                 return response()->json($result,200);
             }
             else
@@ -77,7 +57,6 @@ class UserCredentialsController extends Controller
             return response()->json(['Error' => $show_error->getMessage()], 500);
         }
     }
-
 
 
     // welcome api for user email verification and updation at backend
@@ -115,32 +94,27 @@ class UserCredentialsController extends Controller
         {
             $pas = 0;
             $status = 0;
-            $email_verified = 0;
+
+            // get all record of user from verifiedAccount-middleware where email_verified_at is getting checked.
+            $user_record = $req->user_data;
+            $pas = $user_record->password; 
+            $status = $user_record->status;  
     
             $user = new User;
             $user->email = $req->input('email');
             $user->password = $req->input('password');
-            
-            $data = DB::table('users')->where('email', $user->email)->first();
     
-            $pas = $data->password; 
-            $status = $data->status;  
-            $email_verified = $data->email_verified_at; 
-    
-            if(!empty($email_verified) && Hash::check($user->password, $pas))
+            if(Hash::check($user->password, $pas))
             {
                 if($status == 0)
                 {
-    
                     $jwt_connection = new JWT_Service();
     
                     $jwt = $jwt_connection->get_jwt();
                     // check if jwt is generating or not.
                     //echo $jwt;
     
-                    DB::table('users')->where('email', $user->email)->update(['remember_token' => $jwt]);
-    
-                    DB::table('users')->where('email', $user->email)->update(['status'=> '1']);
+                    DB::table('users')->where('email', $user->email)->update(['remember_token' => $jwt, 'status'=> '1']);
     
                     return response()->json(['Message' => 'Now you are logged In', 'access_token' => $jwt]);
                 }
@@ -151,7 +125,7 @@ class UserCredentialsController extends Controller
             }
             else
             {
-                return response()->json(['Message' => 'Your email '.$user->email.' does not exists in our record '.'because your email is not verified. Please verify your email first.']);
+                return response()->json(['Message' => 'Your email '.$user->email.' does not exists in our record.']);
                 //return response(['Message' => 'Your email '.$user->email.' is not verified. Please verify your email first.']);
             }
         }
@@ -174,7 +148,6 @@ class UserCredentialsController extends Controller
             
             if(!empty($data))
             {
-    
                 // get data of email verified from user
                 $verfiy =$data->email_verified_at;
     
@@ -183,8 +156,9 @@ class UserCredentialsController extends Controller
                     $otp=rand(1000,9999);
                     DB::table('users')->where('email', $mail)->update(['verify_token'=> $otp]);
     
-                    $email_message = $this->sendMailForgetPassword($mail,$otp);
-                    return response()->json(['Message'=> $email_message]);
+                    $send_email_verify = new Email_Service();
+                    $result = $send_email_verify->sendMailForgetPassword($mail,$otp);
+                    return response()->json(['Message'=> $result]);
                 }
                 else{
                     return response()->json(['Message'=>'User not Exists']);
@@ -199,25 +173,6 @@ class UserCredentialsController extends Controller
         {
             return response()->json(['Error' => $show_error->getMessage()], 500);
         }
-    }
-
-
-    // send token as otp for resetting old password with new password,
-    function sendMailForgetPassword($mail,$otp)
-    {
-        $details=[
-            'title'=> 'Forget Password Verification',
-            'body'=> 'Your OTP is '. $otp . ' Please verify and update your password.'
-        ]; 
-
-        // queue to mail job object and function 
-        
-        //$email = new SendEmailJob($sendto, $details);
-        dispatch(new SendEmailJob($mail, $details));
-        //$email->handle();
-
-        //Mail::to($mail)->send(new testmail($details));
-        return response()->json(['Message' => 'An OTP has been sent to '.$mail.' , Please verify and proceed further.']);
     }
 
 
