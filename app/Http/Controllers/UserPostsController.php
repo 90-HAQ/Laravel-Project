@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UserCreatePostValidation;
 use App\Http\Requests\UserUpdatePostValidation;
 use App\Http\Requests\UserDeletePostValidation;
@@ -15,26 +14,32 @@ class UserPostsController extends Controller
     // user create post
     function create_post(UserCreatePostValidation $req)
     {
-        $req->validated();
-
-        // get all record of user from middleware where token is getting checked
-        $user_record = $req->user_data;
-    
-        if(!empty($user_record))
+        try
         {
-            $file = $req->file('file')->store('post');
-            $access =  $req->input('access');    
+            // get all record of user from middleware where token is getting checked
+            $user_record = $req->user_data;
+        
+            if(!empty($user_record))
+            {
+                $file = $req->file('file')->store('post');
+                $access =  $req->input('access');    
 
-            // get user id from users_record
-            $id = $user_record->uid;
+                // get user id from users_record
+                $id = $user_record->uid;
 
-            $val=array('user_id'=>$id, 'file'=>$file, 'access'=>$access);
-            DB::table('posts')->insert($val);
-            return response(['Message'=>'Post Successfull.']);
+                $val=array('user_id'=>$id, 'file'=>$file, 'access'=>$access);
+                DB::table('posts')->insert($val);
+
+                return response()->json(['Message'=>'Post Successfull.']);
+            }
+            else
+            {
+                return response()->json(['Message'=>'Please login First / No Record Found']);
+            }
         }
-        else
+        catch(\Exception $show_error)
         {
-            return response(['Message'=>'Please login First / No Record Found']);
+            return response()->json(['Error' => $show_error->getMessage()], 500);
         }
     }
 
@@ -42,26 +47,31 @@ class UserPostsController extends Controller
     // user view all his own posts
     function view_post(Request $req)
     {
-        $req->validated();
-
-        // get all record of user from middleware where token is getting checked
-        $user_record = $req->user_data;
-
-        if(!empty($user_record))
+        try
         {
-            // gets specfic data against uid
-            $uid = $user_record->uid;
+            // get all record of user from middleware where token is getting checked
+            $user_record = $req->user_data;
 
-            $data = DB::table('posts')->where('user_id', $uid)->get();
+            if(!empty($user_record))
+            {
+                // gets specfic data against uid
+                $uid = $user_record->uid;
 
-            // gets all posts from table
-            //$data = DB::table('posts')->get();
+                $data = DB::table('posts')->where('user_id', $uid)->get();
 
-            return response(['Message'=> $data]);
+                // gets all posts from table
+                //$data = DB::table('posts')->get();
+
+                return response()->json(['Message'=> $data]);
+            }
+            else
+            {
+                return response(['Message'=>'Please login First / Token Expired.']);
+            }
         }
-        else
+        catch(\Exception $show_error)
         {
-            return response(['Message'=>'Please login First / Token Expired.']);
+            return response()->json(['Error' => $show_error->getMessage()], 500);
         }
     }
 
@@ -69,28 +79,33 @@ class UserPostsController extends Controller
     // user updates post
     function update_post(UserUpdatePostValidation $req)
     {
-        $req->validated();
-
-        // get all record of user from middleware where token is getting checked
-        $user_record = $req->user_data;
-
-        if(!empty($user_record))
+        try
         {
-            $pid = $req->input('pid');
-            $file = $req->input('file');
-            //$file = $req->file('file')->store('post');
-            $access = $req->input('access');
+            // get all record of user from middleware where token is getting checked
+            $user_record = $req->user_data;
 
-            // gets specfic data against uid
-            $uid = $user_record->uid;
+            if(!empty($user_record))
+            {
+                $pid = $req->input('pid');
+                $file = $req->input('file');
+                //$file = $req->file('file')->store('post');
+                $access = $req->input('access');
 
-            DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->update(['file'=> $file,'access'=> $access,]);
+                // gets specfic data against uid
+                $uid = $user_record->uid;
 
-            return response(['Message'=>'Post Updated']);
+                DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->update(['file'=> $file,'access'=> $access,]);
+
+                return response()->json(['Message'=>'Post Updated']);
+            }
+            else
+            {
+                return response()->json(['Message'=>'Please login First / Token Expired.']);
+            }
         }
-        else
+        catch(\Exception $show_error)
         {
-            return response(['Message'=>'Please login First / Token Expired.']);
+            return response()->json(['Error' => $show_error->getMessage()], 500);
         }
     }
 
@@ -98,38 +113,51 @@ class UserPostsController extends Controller
     // user delete post
     function delete_post(UserDeletePostValidation $req)
     {
-        $req->validated();
-
-        // get all record of user from middleware where token is getting checked
-        $user_record = $req->user_data;
-
-        if(!empty($user_record))
+        try
         {
-            // get pid from user request
-            $pid = $req->input('pid');
+            // get all record of user from middleware where token is getting checked
+            $user_record = $req->user_data;
 
-            // get user id from middleware 
-            $uid = $user_record->uid;
-
-            // delete comments from comments table first
-            DB::table('comments')->where('post_id', $pid)->delete();            
-
-            // delete posts from posts table 
-            $post = DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->delete();
-
-            if($post == 1)
+            if(!empty($user_record))
             {
-                return response(['Message'=>'Post and Comments on that post deleted successfully.']);   
+                // get pid from user request
+                $pid = $req->input('pid');
+
+                // get user id from middleware 
+                $uid = $user_record->uid;
+
+                // delete comments from comments table first
+                DB::table('comments')->where('post_id', $pid)->delete();            
+
+                // delete posts from posts table 
+                $post = DB::table('posts')->where(['pid' => $pid, 'user_id' => $uid])->delete();
+
+                if($post == 1)
+                {
+                    return response()->json(['Message'=>'Post and Comments on that post deleted successfully.']);   
+                }
+                else
+                {
+                    $check2 = "You are not allowed to delete this post, because this post belongs to someone else. / or this post does not exists.";
+                    return response()->json(['Message' => $check2]);                                 
+                }                
             }
             else
             {
-                $check2 = "You are not allowed to delete this post, because this post belongs to someone else. / or this post does not exists.";
-                return response(['Message' => $check2]);                                 
-            }                
+                return response()->json(['Message'=>'Post Id does not exist.']);
+            }
         }
-        else
+        catch(\Exception $show_error)
         {
-            return response(['Message'=>'Post Id does not exist.']);
+            return response()->json(['Error' => $show_error->getMessage()], 500);
         }
     }
+    // try
+    // {
+
+    // }
+    // catch(\Exception $show_error)
+    // {
+    //     return response()->json(['Error' => $show_error->getMessage()], 500);
+    // }
 }
